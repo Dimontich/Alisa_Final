@@ -1,5 +1,7 @@
 import random
 
+from alice_class import AliceResponse
+
 print("Добро пожалывать в игру матстак. Каждому игроку в начале кона раздается по три карты\n"
       "")
 
@@ -10,6 +12,14 @@ card_d = ["1d", "2d", "3d", "4d", "5d", "6d"]
 
 player_card = []
 Alica_card = []
+
+
+def handle_dialog(request, response: AliceResponse, session_data):
+    # TODO: переход в бизнес-логику
+
+    response.set_text('Завелось..')
+
+    return dict()
 
 
 def first_step():

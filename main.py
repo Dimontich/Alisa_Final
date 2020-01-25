@@ -33,7 +33,7 @@ def main():
 
     user_id = alice_request.user_id
 
-    alice_response, session_storage[user_id] = handle_dialog(
+    session_storage[user_id] = handle_dialog(
         alice_request, alice_response, session_storage.get(user_id)
     )
 
