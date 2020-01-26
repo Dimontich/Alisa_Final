@@ -36,7 +36,7 @@ def main():
     session_storage[user_id] = handle_dialog(alice_request,
                                              alice_response,
                                              session_storage.get(user_id,
-                                                                 default=dict()))
+                                                                 dict()))
 
     # Потому что оперативка плохо работает
     with open("sessions.json", "w", encoding="utf8") as session_file:
