@@ -19,7 +19,7 @@ def test_first_step():
     data = dict()
     first_step(data)
 
-    assert data['is_player_step'] != None
+    assert data['is_player_turn'] != None
     assert data['alice_data'] != None
     assert data['player_data'] != None
     assert data['cards'] != None

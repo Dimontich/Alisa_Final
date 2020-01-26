@@ -58,7 +58,7 @@ def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: 
 
         return session_data
 
-    if session_data['is_player_step']:
+    if session_data['is_player_turn']:
         if command.lower() == 'беру':
             if session_data['current_card'] is None:
                 response.set_text('На столе нет карт')
@@ -78,7 +78,7 @@ def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: 
             answer = player_turn(command, session_data)
             response.set_text(answer)
 
-        if not session_data['is_player_step']:
+        if not session_data['is_player_turn']:
             response.append_text(alice_turn(session_data))
 
         return session_data
@@ -104,7 +104,7 @@ def get_random_card(card_list):
 ## Инициализация игрока и Алисы
 ## @param session_data Данные о сессии
 def first_step(session_data):
-    session_data['is_player_step'] = False  # True - если ход игрока, иначе - ход Алисы
+    session_data['is_player_turn'] = False  # True - если ход игрока, иначе - ход Алисы
     session_data['alice_data'] = dict()  # Данные об Алиса
     session_data['player_data'] = dict()  # Данные об игроке
     session_data['cards'] = ALL_CARDS.copy()  # Доступные карты
