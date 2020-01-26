@@ -1,1 +1,1 @@
-# Alica card
+# Alice Card Game
