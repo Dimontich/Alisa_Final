@@ -2,13 +2,20 @@ import random
 
 from alice_class import AliceResponse, AliceRequest
 
-print("Добро пожалывать в игру матстак. Каждому игроку в начале кона раздается по три карты\n"
-      "")
+HELLO_TEXT = """Добро пожаловать в игру матстак. 
+Каждому игроку в начале раздается по три карты.
 
-ALL_CARDS = ["1a", "2a", "3a", "4a", "5a", "6a",
-             "1b", "2b", "3b", "4b", "5b", "6b",
-             "1c", "2c", "3c", "4c", "5c", "6c",
-             "1d", "2d", "3d", "4d", "5d", "6d"]
+Доступные команды:
+Начать - начать игру
+Беру - взять карту со стола
+/карта/ - положить карту из руки на стол
+"""
+
+# ALL_CARDS = ["1a", "2a", "3a", "4a", "5a", "6a",
+#              "1b", "2b", "3b", "4b", "5b", "6b",
+#              "1c", "2c", "3c", "4c", "5c", "6c",
+#              "1d", "2d", "3d", "4d", "5d", "6d"]
+ALL_CARDS = ["1a", "2a", "3a", "4a", "5a", "6a", ]
 
 player_card = []
 Alica_card = []
@@ -24,18 +31,66 @@ def parse_card(text):
 
 ## Функция, координирующая действия бизнес-логики
 def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: dict):
-    is_first_step = len(session_data) == 0
-    if is_first_step:
-        first_step(session_data)
-        # TODO: greetings
+    is_zero_game = len(session_data) == 0
+    if is_zero_game:
+        session_data['is_end'] = True
+        response.set_text(HELLO_TEXT)
+        return session_data
+
+    command = request.command
+    if session_data['is_end']:
+        if command.lower() == 'начать':
+            first_step(session_data)
+
+            answer = alice_turn(session_data)
+            response.set_text(answer)
+            response.append_text(f'Карты в руке: {session_data["player_data"]["card_list"]}')
+
+        else:
+            response.set_text('Игра окончена. Чтобы начать, введите "Начать"')
+
+        return session_data
+
+    if command.lower() == 'фалалеев':
+        response.set_text(f'Читерить плохо!\n'
+                          f'Карты в колоде: {session_data["cards"]}\n'
+                          f'Карты в руке Алисы: {session_data["alice_data"]["card_list"]}')
+
+        return session_data
 
     if session_data['is_player_step']:
-        # TODO: ходит игрок
-        pass
+        if command.lower() == 'беру':
+            if session_data['current_card'] is None:
+                response.set_text('На столе нет карт')
+
+            card = session_data['current_card']
+            session_data['player_data']['card_list'].append(card)
+            session_data['current_card'] = None
+
+            session_data['current_card'] = None
+
+            response.set_text(f'Вы взяли карту {card}\n')
+
+        elif len(command) != 3:
+            response.set_text(f'Команда {command} отсутствует')
+
+        else:
+            answer = player_turn(command, session_data)
+            response.set_text(answer)
+
+        if not session_data['is_player_step']:
+            response.append_text(alice_turn(session_data))
+
+        return session_data
 
     else:
-        # TODO: ходит Алиса
-        pass
+        # ходит Алиса
+        # А почему она ходит: 0_0
+        response.set_text('Ой все\n')
+
+    card_list = session_data['player_data']['card_list']  # Карты в руке
+    if len(card_list) == 0 and len(session_data['cards']) == 0:
+        response.append_text(f'Вы выиграли. \nНапишите "Начать", чтобы начать заного\n')
 
     return session_data
 
@@ -54,6 +109,7 @@ def first_step(session_data):
     session_data['player_data'] = dict()  # Данные об игроке
     session_data['cards'] = ALL_CARDS.copy()  # Доступные карты
     session_data['current_card'] = None  # Карта на столе
+    session_data['is_end'] = False
 
     # Карты для Алисы и игрока
     for data in (session_data['alice_data'], session_data['player_data']):  # берем по ссылке данные
@@ -81,41 +137,60 @@ def get_new_random_card(session_data, player_turn):
     data['card_list'].append(card)
     session_data['cards'].remove(card)
 
+    return True
+
 
 ## Логика хода игрока
 ## @return Текст ответа
 def player_turn(card_name, session_data):
-    if len(session_data['cards']) != 0 and card_name not in session_data['cards']:
-        return f'В колоде нет такой карты. Доступные карты: {str(session_data["cards"])}'
+    answer = ''
+    card_list = session_data['player_data']['card_list']  # Карты в руке
+
+    if len(card_list) != 0 and card_name not in card_list:
+        return f'В руке нет такой карты. Доступные карты: {str(card_list)}\n'
 
     # На столе есть карта
     if session_data['current_card']:
         player_number, player_type = parse_card(card_name)
         table_number, table_type = parse_card(session_data['current_card'])
 
-        if player_type == table_type:
-            return f'Масть карты на столе ({session_data["current_card"]}) не совпадает с Вашей картой ({card_name})'
+        if player_type != table_type:
+            return f'Масть карты на столе ({session_data["current_card"]}) не совпадает с Вашей картой ({card_name})\n'
 
         if player_number <= table_number:
             return f'Вы не можете побить карту на столе ({session_data["current_card"]}) ' \
-                   f'Вашей картой меньшего веса ({card_name})'
+                   f'Вашей картой меньшего веса ({card_name})\n'
 
-        # TODO: очистить стол, убрать карту
+        session_data['current_card'] = None
+        card_list.remove(card_name)
 
-        return f'TODO'
+        # Берем карту из колоды, если нужно
+        if len(card_list) < 3:
+            get_new_random_card(session_data, True)
+
+            answer += 'Вы взяли карту из колоды\n'
+
+        return answer + f'Бита. \nПоложите карту на стол. Карты в руке: {str(card_list)}\n'
 
     # Надо положить карту на стол
-    if len(session_data['cards']) == 0:
-        pass
-        # TODO: winner
-
     session_data['current_card'] = card_name
 
     session_data['player_data']['card_list'].remove(card_name)
     session_data['is_player_turn'] = False
 
+    # Берем карту из колоды, если нужно
+    if len(card_list) < 3:
+        get_new_random_card(session_data, True)
+
+        answer += 'Вы взяли карту из колоды\n'
+
+    return f'Вы положили на стол карту {card_name}\n' \
+           f'Карты в руке: {str(card_list)}\n'
+
 
 def alice_turn(session_data):
+    answer = ''
+
     if session_data['current_card']:
         table_number, table_type = parse_card(session_data['current_card'])
 
@@ -125,14 +200,18 @@ def alice_turn(session_data):
             if alice_type == table_type and alice_number > table_number:
                 session_data['current_card'] = None
                 session_data['alice_data']['card_list'].remove(card)
+
+                answer += 'Бита\n'
                 break
 
         # Отбить не удалось
         if session_data['current_card']:
-            session_data['current_card'] = None
             session_data['alice_data']['card_list'].append(session_data['current_card'])
+            session_data['current_card'] = None
 
             session_data['is_player_turn'] = True
+
+            answer += 'Беру\n'
 
     # Алиса кладет карту
     if not session_data['is_player_turn']:
@@ -140,8 +219,21 @@ def alice_turn(session_data):
         if len(card_list) < 3:
             get_new_random_card(session_data, False)
 
-        if len(card_list) == 0
-            card = get_random_card(card_list)
+        if len(card_list) == 0:
+            session_data['is_end'] = True
+            return f'Я выиграла\n'
+
+        card = get_random_card(card_list)  # Достаем случайную карту из руки
+
+        card_list.remove(card)  # Убираем из руки
+        session_data['current_card'] = card  # Кладем на стол
+
+        session_data['is_player_turn'] = True
+
+        answer += f'Положила на стол {session_data["current_card"]}\n'
+        answer += f'Ваш ход\n'
+
+    return answer
 
 
 def second_step_Alica():
