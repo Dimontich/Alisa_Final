@@ -73,7 +73,7 @@ def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: 
             response.set_text(f'Вы взяли карту {card}\n')
 
         elif len(command) != 2:
-            response.set_text(f'Команда {command} отсутствует')
+            response.set_text(f'Команда {command} отсутствует\n')
 
         else:
             answer = player_turn(command, session_data)
@@ -81,7 +81,7 @@ def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: 
 
         if not session_data['is_player_turn']:
             response.append_text(alice_turn(session_data))
-            response.append_text(f'Карты в руке: {session_data["player_data"]["card_list"]}')
+            response.append_text(f'Карты в руке: {session_data["player_data"]["card_list"]}\n')
 
     else:
         # ходит Алиса
