@@ -67,7 +67,7 @@ def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: 
             session_data['player_data']['card_list'].append(card)
             session_data['current_card'] = None
 
-            session_data['current_card'] = None
+            session_data['is_player_turn'] = False
 
             response.set_text(f'Вы взяли карту {card}\n')
 
