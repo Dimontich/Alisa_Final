@@ -80,6 +80,7 @@ def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: 
 
         if not session_data['is_player_turn']:
             response.append_text(alice_turn(session_data))
+            response.append_text(f'Карты в руке: {session_data["player_data"]["card_list"]}')
 
         return session_data
 
@@ -166,9 +167,8 @@ def player_turn(card_name, session_data):
 
         # Берем карту из колоды, если нужно
         if len(card_list) < 3:
-            get_new_random_card(session_data, True)
-
-            answer += 'Вы взяли карту из колоды\n'
+            if get_new_random_card(session_data, True):
+                answer += 'Вы взяли карту из колоды\n'
 
         return answer + f'Бита. \nПоложите карту на стол. Карты в руке: {str(card_list)}\n'
 
@@ -180,9 +180,8 @@ def player_turn(card_name, session_data):
 
     # Берем карту из колоды, если нужно
     if len(card_list) < 3:
-        get_new_random_card(session_data, True)
-
-        answer += 'Вы взяли карту из колоды\n'
+        if get_new_random_card(session_data, True):
+            answer += 'Вы взяли карту из колоды\n'
 
     return f'Вы положили на стол карту {card_name}\n' \
            f'Карты в руке: {str(card_list)}\n'
