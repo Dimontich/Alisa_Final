@@ -62,6 +62,7 @@ def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: 
         if command.lower() == 'беру':
             if session_data['current_card'] is None:
                 response.set_text('На столе нет карт')
+                return session_data
 
             card = session_data['current_card']
             session_data['player_data']['card_list'].append(card)
