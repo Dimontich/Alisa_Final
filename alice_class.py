@@ -62,7 +62,11 @@ class AliceResponse(object):
 
     ## установка текста
     def set_text(self, text):
-        self._response_dict['response']['text'] = text[:1024]
+        self._response_dict['response']['text'] = text
+
+    ## добавление текста
+    def append_text(self, text):
+        self._response_dict['response']['text'] += text
 
     ## конец диалога
     def end(self):

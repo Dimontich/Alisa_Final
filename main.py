@@ -24,8 +24,8 @@ with open("sessions.json", "w", encoding="utf8") as file:
 # Функция для взаимодействия между пользователем и сайтом
 # @return   Функция получает тело запроса и возвращает ответ
 def main():
-    with open("sessions.json", encoding="utf8") as file:
-        session_storage = json.loads(file.read())
+    with open("sessions.json", encoding="utf8") as session_file:
+        session_storage = json.loads(session_file.read())
 
     alice_request = AliceRequest(request.json)
 
@@ -33,13 +33,14 @@ def main():
 
     user_id = alice_request.user_id
 
-    session_storage[user_id] = handle_dialog(
-        alice_request, alice_response, session_storage.get(user_id)
-    )
+    session_storage[user_id] = handle_dialog(alice_request,
+                                             alice_response,
+                                             session_storage.get(user_id,
+                                                                 default=dict()))
 
     # Потому что оперативка плохо работает
-    with open("sessions.json", "w", encoding="utf8") as file:
-        json.dump(session_storage, fp=file)
+    with open("sessions.json", "w", encoding="utf8") as session_file:
+        json.dump(session_storage, fp=session_file)
 
     logging.info("Response: {}".format(alice_response))
 

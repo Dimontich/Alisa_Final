@@ -1,123 +1,147 @@
 import random
 
-from alice_class import AliceResponse
+from alice_class import AliceResponse, AliceRequest
 
 print("Добро пожалывать в игру матстак. Каждому игроку в начале кона раздается по три карты\n"
       "")
 
-card_a = ["1a", "2a", "3a", "4a", "5a", "6a"]
-card_b = ["1b", "2b", "3b", "4b", "5b", "6b"]
-card_c = ["1c", "2c", "3c", "4c", "5c", "6c"]
-card_d = ["1d", "2d", "3d", "4d", "5d", "6d"]
+ALL_CARDS = ["1a", "2a", "3a", "4a", "5a", "6a",
+             "1b", "2b", "3b", "4b", "5b", "6b",
+             "1c", "2c", "3c", "4c", "5c", "6c",
+             "1d", "2d", "3d", "4d", "5d", "6d"]
 
 player_card = []
 Alica_card = []
 
 
-def handle_dialog(request, response: AliceResponse, session_data):
-    # TODO: переход в бизнес-логику
-
-    response.set_text('Завелось..')
-
-    return dict()
-
-
-def first_step():
-    # карты игрока
-    i = 0
-    while i < 3:
-        step = random.randint(0, 3)
-        if step == 0:
-            a_p = random.choice(card_a)
-            player_card.append(a_p)
-            card_a.remove(a_p)
-
-        if step == 1:
-            b_p = random.choice(card_b)
-            player_card.append(b_p)
-            card_b.remove(b_p)
-
-        if step == 2 and card_c:
-            c_p = random.choice(card_c)
-            player_card.append(c_p)
-            card_c.remove(c_p)
-
-        if step == 3 and card_d:
-            d_p = random.choice(card_d)
-            player_card.append(d_p)
-            card_d.remove(d_p)
-
-        i += 1
-
-    # Карты алисы
-    j = 0
-    while j < 3:
-        step_a = random.randint(0, 3)
-        if step_a == 0:
-            a_a = random.choice(card_a)
-            Alica_card.append(a_a)
-            card_a.remove(a_a)
-        if step_a == 1:
-            b_a = random.choice(card_b)
-            Alica_card.append(b_a)
-            card_b.remove(b_a)
-        if step_a == 2:
-            c_a = random.choice(card_c)
-            Alica_card.append(c_a)
-            card_c.remove(c_a)
-        if step_a == 3:
-            d_a = random.choice(card_d)
-            Alica_card.append(d_a)
-            card_d.remove(d_a)
-        j += 1
+## Выделяет из карты номер и масть
+## @param text Название карты
+## @return Кортеж из номера и масти
+def parse_card(text):
+    return (int(text[0]),
+            text[1])
 
 
-first_step()
+## Функция, координирующая действия бизнес-логики
+def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: dict):
+    is_first_step = len(session_data) == 0
+    if is_first_step:
+        first_step(session_data)
+        # TODO: greetings
+
+    if session_data['is_player_step']:
+        # TODO: ходит игрок
+        pass
+
+    else:
+        # TODO: ходит Алиса
+        pass
+
+    return session_data
 
 
-def second_step():
-    i = 0
-    while i < 1:
-        step = random.randint(0, 3)
-        if step == 0:
-            a_p = random.choice(card_a)
-            player_card.append(a_p)
-            card_a.remove(a_p)
-        if step == 1:
-            b_p = random.choice(card_b)
-            player_card.append(b_p)
-            card_b.remove(b_p)
-        if step == 2:
-            c_p = random.choice(card_c)
-            player_card.append(c_p)
-            card_c.remove(c_p)
-        if step == 3:
-            d_p = random.choice(card_d)
-            player_card.append(d_p)
-            card_d.remove(d_p)
-        i += 1
+## Получить случайную карту
+## @param args Списки с картами
+def get_random_card(card_list):
+    return card_list[random.randint(0, len(card_list) - 1)]
 
-    # Карты алисы
-    j = 0
-    while j < 1:
-        step_a = random.randint(0, 3)
-        if step_a == 0:
-            a_a = random.choice(card_a)
-            Alica_card.append(a_a)
-            card_a.remove(a_a)
-        if step_a == 1:
-            b_a = random.choice(card_b)
-            Alica_card.append(b_a)
-            card_b.remove(b_a)
-        if step_a == 2:
-            c_a = random.choice(card_c)
-            Alica_card.append(c_a)
-            card_c.remove(c_a)
-        if step_a == 3:
-            d_a = random.choice(card_d)
-            Alica_card.append(d_a)
-            card_d.remove(d_a)
-        j += 1
+
+## Инициализация игрока и Алисы
+## @param session_data Данные о сессии
+def first_step(session_data):
+    session_data['is_player_step'] = False  # True - если ход игрока, иначе - ход Алисы
+    session_data['alice_data'] = dict()  # Данные об Алиса
+    session_data['player_data'] = dict()  # Данные об игроке
+    session_data['cards'] = ALL_CARDS.copy()  # Доступные карты
+    session_data['current_card'] = None  # Карта на столе
+
+    # Карты для Алисы и игрока
+    for data in (session_data['alice_data'], session_data['player_data']):  # берем по ссылке данные
+        data['card_list'] = []
+
+        for i in range(0, 3):
+            card = get_random_card(session_data['cards'])
+
+            data['card_list'].append(card)
+            session_data['cards'].remove(card)
+
+
+## Получить новую случайную карту
+## @param session_data Данные о сессии
+## @param player_turn True, если карту берет игрок, иначе - карту берет Алиса
+## @return True, если операция успешна, иначе - False
+def get_new_random_card(session_data, player_turn):
+    if len(session_data['cards']) == 0:
+        return False
+
+    card = get_random_card(session_data['cards'])
+
+    data = session_data['player_data'] if player_turn else session_data['alice_data']
+
+    data['card_list'].append(card)
+    session_data['cards'].remove(card)
+
+
+## Логика хода игрока
+## @return Текст ответа
+def player_turn(card_name, session_data):
+    if len(session_data['cards']) != 0 and card_name not in session_data['cards']:
+        return f'В колоде нет такой карты. Доступные карты: {str(session_data["cards"])}'
+
+    # На столе есть карта
+    if session_data['current_card']:
+        player_number, player_type = parse_card(card_name)
+        table_number, table_type = parse_card(session_data['current_card'])
+
+        if player_type == table_type:
+            return f'Масть карты на столе ({session_data["current_card"]}) не совпадает с Вашей картой ({card_name})'
+
+        if player_number <= table_number:
+            return f'Вы не можете побить карту на столе ({session_data["current_card"]}) ' \
+                   f'Вашей картой меньшего веса ({card_name})'
+
+        # TODO: очистить стол, убрать карту
+
+        return f'TODO'
+
+    # Надо положить карту на стол
+    if len(session_data['cards']) == 0:
+        pass
+        # TODO: winner
+
+    session_data['current_card'] = card_name
+
+    session_data['player_data']['card_list'].remove(card_name)
+    session_data['is_player_turn'] = False
+
+
+def alice_turn(session_data):
+    if session_data['current_card']:
+        table_number, table_type = parse_card(session_data['current_card'])
+
+        for card in session_data['alice_data']['card_list']:
+            alice_number, alice_type = parse_card(card)
+
+            if alice_type == table_type and alice_number > table_number:
+                session_data['current_card'] = None
+                session_data['alice_data']['card_list'].remove(card)
+                break
+
+        # Отбить не удалось
+        if session_data['current_card']:
+            session_data['current_card'] = None
+            session_data['alice_data']['card_list'].append(session_data['current_card'])
+
+            session_data['is_player_turn'] = True
+
+    # Алиса кладет карту
+    if not session_data['is_player_turn']:
+        card_list = session_data['alice_data']['card_list']
+        if len(card_list) < 3:
+            get_new_random_card(session_data, False)
+
+        if len(card_list) == 0
+            card = get_random_card(card_list)
 
 
 def second_step_Alica():
