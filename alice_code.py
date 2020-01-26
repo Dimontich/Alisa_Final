@@ -71,7 +71,7 @@ def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: 
 
             response.set_text(f'Вы взяли карту {card}\n')
 
-        elif len(command) != 3:
+        elif len(command) != 2:
             response.set_text(f'Команда {command} отсутствует')
 
         else:
