@@ -1,12 +1,13 @@
-##@package AliceClass
-# Вспомогательный файл с классами
+## @package alice_class
+## @brief Вспомогательный файл с классами
 
 import json
 
 
 ## Класс запроса Алисы
-class AliceRequest(object):
+class AliceRequest:
     ## Конструктор класса
+    ## @param request_dict Словарь запроса
     def __init__(self, request_dict):
         self._request_dict = request_dict
 
@@ -35,14 +36,15 @@ class AliceRequest(object):
     def command(self):
         return self._request_dict['request']['command']
 
-    ## Строка
+    ## Приведение к строке
     def __str__(self):
         return str(self._request_dict)
 
 
 ## Класс ответа Алисы
-class AliceResponse(object):
+class AliceResponse:
     ## Конструктор класса
+    ## @param alice_request Объект класса AliceRequest
     def __init__(self, alice_request):
         self._response_dict = {
             "version": alice_request.version,
@@ -61,10 +63,12 @@ class AliceResponse(object):
         )
 
     ## установка текста
+    ## @param text текст, который установить
     def set_text(self, text):
         self._response_dict['response']['text'] = text
 
     ## добавление текста
+    ## @param text текст, который добавить
     def append_text(self, text):
         self._response_dict['response']['text'] += text
 

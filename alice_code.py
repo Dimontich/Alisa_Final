@@ -1,7 +1,11 @@
+## @package alice_code
+## @brief Файл с логикой Алисы
+
 import random
 
 from alice_class import AliceResponse, AliceRequest
 
+## Текст приветствия
 HELLO_TEXT = """Добро пожаловать в игру матстак. 
 Каждому игроку в начале раздается по три карты.
 
@@ -11,14 +15,14 @@ HELLO_TEXT = """Добро пожаловать в игру матстак.
 /карта/ - положить карту из руки на стол
 """
 
+## Список всех карт
 ALL_CARDS = ["1a", "2a", "3a", "4a", "5a", "6a",
              "1b", "2b", "3b", "4b", "5b", "6b",
              "1c", "2c", "3c", "4c", "5c", "6c",
              "1d", "2d", "3d", "4d", "5d", "6d"]
-# ALL_CARDS = ["1a", "2a", "3a", "4a", "5a", "6a", ]
 
-player_card = []
-Alica_card = []
+
+# ALL_CARDS = ["1a", "2a", "3a", "4a", "5a", "6a", ]
 
 
 ## Выделяет из карты номер и масть
@@ -30,6 +34,10 @@ def parse_card(text):
 
 
 ## Функция, координирующая действия бизнес-логики
+## @param request Объект запроса
+## @param response Объект ответа
+## @param session_data Информация о сессии
+## @return Новая информация о сессии
 def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: dict):
     is_zero_game = len(session_data) == 0
     if is_zero_game:
@@ -96,7 +104,8 @@ def handle_dialog(request: AliceRequest, response: AliceResponse, session_data: 
 
 
 ## Получить случайную карту
-## @param args Списки с картами
+## @param card_list Списки с картами
+## @return Карта (название)
 def get_random_card(card_list):
     return card_list[random.randint(0, len(card_list) - 1)]
 
@@ -124,15 +133,15 @@ def first_step(session_data):
 
 ## Получить новую случайную карту
 ## @param session_data Данные о сессии
-## @param player_turn True, если карту берет игрок, иначе - карту берет Алиса
+## @param is_player_turn True, если карту берет игрок, иначе - карту берет Алиса
 ## @return True, если операция успешна, иначе - False
-def get_new_random_card(session_data, player_turn):
+def get_new_random_card(session_data, is_player_turn):
     if len(session_data['cards']) == 0:
         return False
 
     card = get_random_card(session_data['cards'])
 
-    data = session_data['player_data'] if player_turn else session_data['alice_data']
+    data = session_data['player_data'] if is_player_turn else session_data['alice_data']
 
     data['card_list'].append(card)
     session_data['cards'].remove(card)
@@ -141,6 +150,8 @@ def get_new_random_card(session_data, player_turn):
 
 
 ## Логика хода игрока
+## @param card_name Карта
+## @param session_data Информация о сессии
 ## @return Текст ответа
 def player_turn(card_name, session_data):
     answer = ''
@@ -186,6 +197,9 @@ def player_turn(card_name, session_data):
            f'Карты в руке: {str(card_list)}\n'
 
 
+## Логика хода Алисы
+## @param session_data Информация о сессии
+## @return Ответ
 def alice_turn(session_data):
     answer = ''
 
