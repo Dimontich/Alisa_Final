@@ -16,7 +16,6 @@ jobs:
     - stage: test
       name: test
       script:
-        - cd tests
         - pytest tests.py
     - stage: deploy
       name: deploy
